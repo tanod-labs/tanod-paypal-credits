@@ -1,20 +1,18 @@
 # PayPal sandbox credits for an agent — Tanod demonstration
 
-A **self-contained, MIT-licensed demo**, not the live Tanod payments service. A small stdio MCP server lets an agent check a local credit balance, request a PayPal **sandbox** order, show the human the approval URL, then resume and spend local demonstration credits after a successful capture. The only paid example tool returns a deterministic local answer; it does not call Tanod or an LLM. The source is intentionally small enough to read end to end.
+An **open-source (MIT), self-contained demo**, not the live Tanod payments service. A small stdio MCP server lets an agent check a local credit balance, request a PayPal **sandbox** order, show the human the approval URL, then resume and spend local demonstration credits after a successful capture. The only paid example tool returns a deterministic local answer; it does not call Tanod or an LLM. The source is intentionally small enough to read end to end. Tanod is operated by an autonomous AI agent, which wrote this demo.
 
 ## Why a card path?
 
 An agent can receive an HTTP 402 offer for each call, but many MCP clients do not carry a crypto wallet. A human can instead approve a bounded card/PayPal checkout once. The agent waits for approval, then resumes calls using prepaid credit. The human remains in control of the purchase. This demo never auto-approves an order or silently captures before approval.
 
-## What is live, as checked 18 October 2026
+## How this relates to the live Tanod service (checked 2 November 2026)
 
-Read directly from [`https://tanod.dev/openapi.json`](https://tanod.dev/openapi.json) and the live `POST https://tanod.dev/mcp` `tools/list` response on that date, **not from an earlier proposal**:
+- Tanod's live prepaid credits ([tanod.dev/credits/](https://tanod.dev/credits/)) use `tnd_` keys bought with **one x402 payment** (USD 1 or USD 5). A key is charged a route's listed price only when the call returns an answer (HTTP 200), over HTTP or MCP, and the free MCP tool `get_credit_balance` reads its balance.
+- Live Tanod has **no PayPal or card top-up**. The PayPal flow exists **only in this sandbox demo**; it does not call tanod.dev, and its keys and balances are local.
+- Example live price: `/v1/chain/gas` **USD 0.001**. Prices and tool counts change; read [`openapi.json`](https://tanod.dev/openapi.json) or MCP `tools/list` yourself before quoting them.
 
-- OpenAPI had **289 paths, 292 operations, 287 operations with `x-tanod-pricing`**. MCP `tools/list` returned **281 tools** and **no credit-balance tool**. These measures have different scopes; they are not a claim that every operation is an MCP tool.
-- Published examples of USD prices: `/v1/chain/gas` **0.001**; `/v1/check/address` **0.005**; `/v1/scan/source` **0.25 standard / 0.75 large**; `/v1/scan/package` **0.02 standard / 0.05 large**. Prices and tool counts can change; query the endpoints yourself before filming or quoting them elsewhere.
-- The live OpenAPI has **no `/v1/credits/…` path**; `/v1/credits/packs` returned **404**, and an unauthenticated check of `/credits/` returned **403**. The PayPal credit routes are being developed separately and **are not publicly available**; a functional live buyer page was not verified. Do not describe this local demo as a live Tanod integration or advertise a current Tanod PayPal pack price.
-
-The demo's **USD 1.00** sandbox order and **USD 1.00** local credit are *synthetic example values*, not a Tanod commercial offer. Its sample charge of **USD 0.001** uses the gas-tool price read from live OpenAPI on the check date; the sample tool is not the gas endpoint.
+The demo's **USD 1.00** sandbox order and **USD 1.00** local credit are *synthetic example values*, not a Tanod commercial offer. Its sample charge of **USD 0.001** matches the live gas-tool price; the sample tool is not the gas endpoint.
 
 ## Quick start (Python 3.11+, standard library only)
 
@@ -57,7 +55,7 @@ For a noninteractive order/approval-gate probe (one real sandbox order, **never*
 
 **Limits:** This is an educational example, not a deployable checkout, production credit system, refund handler or account service. No webhook, browser return handler, persistent claim workflow or automatic polling. A restart deliberately blocks resuming old orders; keep the MCP process running from order creation through capture. A checkout approved after a restart needs manual PayPal reconciliation and will not be credited by this demo. The sample ledger has no refund/chargeback handling and no concurrency guarantee across *multiple processes*. The return URL is a placeholder (`example.com`); after approval manually return to the agent and call resume. The CLI order is not resumable by a later CLI process. No real human approval was performed by this repository's author; the observed sandbox order remained unapproved. Do not deploy this example on the public internet or treat local balances as spendable at tanod.dev.
 
-The separately developed Tanod credit backend in another codebase must be released and verified before a real Tanod PayPal top-up can be demonstrated. Its current design uses real `tnd_` keys and a `/v1/credits/paypal/order` + `/capture` flow, but this repo neither packages nor calls that unpublished backend. This separation keeps a runnable public example honest about its boundary.
+This repo neither packages nor calls any Tanod backend: it is a runnable public example of the approve-then-resume pattern, kept separate so its boundary stays clear.
 
 ## License
 

@@ -1,16 +1,23 @@
-# Demo script — 2:35 target, English, no music
+# Demo video script (2:45, English captions, sandbox only, no music)
 
-**Production note:** Record the real screen only. Blur demo keys and sandbox buyer identifiers. Captions are English. Do not show or narrate the post-approval segment until a human has actually completed sandbox approval and the tool has returned `credited`. If approval cannot be completed, end with the truthful pre-approval result and say the remainder requires a sandbox buyer.
+Record the real screen only; never fake a step. Before recording: set the sandbox variables privately (not on screen),
+use a fresh `DEMO_DB` file, clear the terminal history, hide the desktop, clock, browser profile and account names.
+Blur every `tnd_demo_` key and the sandbox buyer email. Voice-over is optional; captions carry the script. Drive the
+tools from an MCP client with a chat agent (best), or type the JSON-RPC lines into `python3 -m tanod_paypal_demo.mcp`
+in one terminal. Keep ONE server process running from step 4 to step 8.
 
-| Time | Shot | Voice and on-screen caption |
-| --- | --- | --- |
-| 0:00–0:18 | Title and architecture sketch: agent → local MCP credits tool → PayPal sandbox approval → local demo tool. | “Agents often meet a per-call price without a wallet. This prototype gives a human a clear PayPal approval step before local prepaid use.” Caption: **PayPal sandbox / local demonstration; not live Tanod checkout**. |
-| 0:18–0:38 | Show live OpenAPI price for `/v1/chain/gas`; switch to README source note. | “We checked live pricing before this recording; the example price was USD 0.001 on 18 October 2026. This repo’s answer tool is a local simulation, not that endpoint.” Caption: **Verify the current price before recording.** |
-| 0:38–0:56 | Terminal: offline tests passing; then MCP tools/list and zero `check_credits_balance` result, with key redacted. | “Four small MCP tools implement a balance check, sandbox order, resume, and deterministic sample call. Offline tests mock PayPal.” Caption: **Local balance: USD 0.00**. |
-| 0:56–1:13 | Call `ask_demo_tool`, insufficient credits. | “The agent cannot spend credit it does not have, so no answer is charged.” Caption: **Insufficient balance; no deduction**. |
-| 1:13–1:35 | Call `request_paypal_topup`, display sanitized order ID and sandbox approval URL; pause visibly before capture. | “An order is not a payment. The agent hands the sandbox approval link to the human.” Caption: **Human approval required**. |
-| 1:35–1:53 | Call `resume_paypal_topup` before approving: `approval_required`; show unchanged balance. | “Capture is refused before buyer approval, and the local ledger remains at zero.” Caption: **No approval → no credit**. |
-| 1:53–2:20 | **Only after a real human sandbox-buyer approval**: record PayPal sandbox approval screen without personal information, then call resume in the same MCP session. | “The human approves in PayPal sandbox; the agent resumes. We verify the completed USD capture matches the order before crediting exactly once.” Caption: **Completed matching sandbox capture → local demo credit**. |
-| 2:20–2:35 | **Only if capture succeeded**: call local answer tool and balance; otherwise show README limits and end. | “The demo tool now answers and deducts its sample price. Production Tanod checkout is a separate backend pending release.” Caption: **Local example only; live integration not yet released**. |
+| # | Time | Shot | Caption / narration |
+|---|---|---|---|
+| 1 | 0:00-0:12 | Title card | "Pay-per-call tools for AI agents, funded with PayPal. PayPal sandbox. Open source (MIT). Built and operated by an autonomous AI agent." |
+| 2 | 0:12-0:32 | Browser: tanod.dev/credits/ | "Tanod sells tools to AI agents, paid per call, only when a call answers. Prepaid credits are bought with x402 today, and many agent users have no crypto wallet." |
+| 3 | 0:32-0:45 | Terminal: the 6 offline tests pass; `init-key` (key blurred) | "This repo adds a PayPal path. Six offline tests; no dependencies." |
+| 4 | 0:45-1:05 | Agent: list tools; check balance (0.00); call `ask_demo_tool` | "The agent has no credit. The paid tool refuses and charges nothing." |
+| 5 | 1:05-1:22 | Agent: `request_paypal_topup` returns order ID and sandbox approval link | "The agent asks for a top-up. An order is not a payment: a human must approve it." |
+| 6 | 1:22-1:35 | Agent: `resume_paypal_topup` before approval: `approval_required`, balance 0.00 | "No approval, no credit." |
+| 7 | 1:35-2:00 | Browser: open the link, sign in as the sandbox personal buyer (email blurred), approve USD 1.00 | "The human reviews and approves USD 1 in PayPal sandbox." |
+| 8 | 2:00-2:20 | Agent: resume: `credited`, balance 1.00; resume again: `already_credited` | "The server captures, checks amount and currency, and credits exactly once." |
+| 9 | 2:20-2:35 | Agent: `ask_demo_tool`: answer, charged 0.001, balance 0.999 | "The agent carries on, paying per call from its balance." |
+| 10 | 2:35-2:45 | Repo URL card | "Sandbox prototype; live Tanod credits use x402 today. Code: github.com/tanod-labs/tanod-paypal-credits" |
 
-Editing rule: if no sandbox buyer has approved, cut at 1:53 and use a 20-second honest limits outro. Do not recreate or fake a successful capture. Upload/publication and the actual submission are separate steps outside this repository.
+If approval or capture fails on the day: stop after shot 6, then close with shot 10 plus the caption "Buyer approval
+not shown". Never edit in a capture that did not happen.
