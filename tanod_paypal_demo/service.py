@@ -101,7 +101,7 @@ class Demo:
             self._session_orders.add(order.order_id)
             return {"order_id": order.order_id, "approval_url": order.approve_url,
                     "sandbox_price_usd": str(PRICE), "demo_credit_usd": usd(CREDIT),
-                    "next_step": "Ask the human to approve on PayPal sandbox. Then call resume_topup with this order ID in this same MCP session. Do not claim payment is complete yet."}
+                    "next_step": "Ask the human to approve on PayPal sandbox. Then call resume_paypal_topup with this order ID in this same MCP session. Do not claim payment is complete yet."}
 
     def resume_topup(self, key: str, order_id: str) -> dict:
         if not ORDER_RE.fullmatch(order_id):
@@ -152,7 +152,7 @@ class Demo:
                 if not changed:
                     self.db.execute("ROLLBACK")
                     return {"status": "insufficient_credits", "price_usd": usd(DEMO_CALL), **self.balance(key),
-                            "next_step": "Call request_topup and ask a human to approve; retry this tool after resume_topup credits the account."}
+                            "next_step": "Call request_paypal_topup and ask a human to approve; retry this tool after resume_paypal_topup credits the account."}
                 self.db.execute("COMMIT")
             except BaseException:
                 self.db.execute("ROLLBACK")
