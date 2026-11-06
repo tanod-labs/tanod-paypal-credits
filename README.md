@@ -6,10 +6,10 @@ An **open-source (MIT), self-contained demo**, not the live Tanod payments servi
 
 An agent can receive an HTTP 402 offer for each call, but many MCP clients do not carry a crypto wallet. A human can instead approve a bounded card/PayPal checkout once. The agent waits for approval, then resumes calls using prepaid credit. The human remains in control of the purchase. This demo never auto-approves an order or silently captures before approval.
 
-## How this relates to the live Tanod service (checked 2 November 2026)
+## How this relates to the live Tanod service (checked 6 November 2026)
 
 - Tanod's live prepaid credits ([tanod.dev/credits/](https://tanod.dev/credits/)) use `tnd_` keys bought with **one x402 payment** (USD 1 or USD 5). A key is charged a route's listed price only when the call returns an answer (HTTP 200), over HTTP or MCP, and the free MCP tool `get_credit_balance` reads its balance.
-- Live Tanod has **no PayPal or card top-up**. The PayPal flow exists **only in this sandbox demo**; it does not call tanod.dev, and its keys and balances are local.
+- The current [live packs response](https://tanod.dev/v1/credits/packs) advertises x402 funding and no PayPal/card offer. This repo demonstrates a separate **PayPal sandbox** flow; it does not call tanod.dev, and its keys and balances are local. Recheck that response before recording or submitting.
 - Example live price: `/v1/chain/gas` **USD 0.001**. Prices and tool counts change; read [`openapi.json`](https://tanod.dev/openapi.json) or MCP `tools/list` yourself before quoting them.
 
 The demo's **USD 1.00** sandbox order and **USD 1.00** local credit are *synthetic example values*, not a Tanod commercial offer. Its sample charge of **USD 0.001** matches the live gas-tool price; the sample tool is not the gas endpoint.
@@ -19,21 +19,22 @@ The demo's **USD 1.00** sandbox order and **USD 1.00** local credit are *synthet
 ```sh
 cd /path/to/tanod-paypal-credits
 python3 -m unittest discover -s tests -v
+export PAYPAL_ENV=sandbox
+export DEMO_DB="$PWD/demo-recording.sqlite"
+test ! -e "$DEMO_DB"
+```
+
+If the last check fails, choose a new unused database filename; do not overwrite an earlier purchase ledger. Then, **off screen**:
+
+```sh
 python3 -m tanod_paypal_demo.cli init-key
 ```
 
-Save the displayed `tnd_demo_…` key **privately**. This key is only for the local demo ledger, not a Tanod API key. For a PayPal sandbox order, obtain **sandbox REST app** client ID/secret from PayPal Developer Dashboard. Set them in your shell/process environment; never add them to a command line, repository, output file or public recording. For example, use a local ignored file outside this repo with restrictive permissions and source it into the shell; the program reads `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` at runtime. Set `PAYPAL_ENV=sandbox` if desired; any other value is rejected. Never use live credentials here.
+Save the displayed `tnd_demo_…` key **privately**. This key is only for the local demo ledger, not a Tanod API key. Obtain sandbox REST app credentials from PayPal Developer Dashboard and pass `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` through private process-environment management. Never show their values in commands, chat, logs or recordings; never use live credentials.
 
-```sh
-# In the same process environment as the commands below, set your sandbox variables securely.
-export PAYPAL_ENV=sandbox
-python3 -m tanod_paypal_demo.cli --db /tmp/tanod-demo.sqlite balance --key 'YOUR_LOCAL_DEMO_KEY'
-python3 -m tanod_paypal_demo.cli --db /tmp/tanod-demo.sqlite request-topup --key 'YOUR_LOCAL_DEMO_KEY'
-```
+Use an AI MCP client for the complete approval/resume sequence. The CLI cannot resume an order in a later process. Keep the local key out of command-line arguments, URLs, screenshots and commits; supply it to the trusted local tool privately and redact it from visible transcripts.
 
-The CLI creates an order and returns a sandbox PayPal URL but **does not** run a persistent session for resuming; use the MCP server below for the complete approval/resume sequence. `--key` is a demo key; on a shared system, command-line arguments can be visible to other users. For a privacy-sensitive run, use the MCP client instead and store its configuration outside the repository. Never put keys in a URL, logs, screenshots or a commit.
-
-Configure a stdio MCP client to launch `python3 -m tanod_paypal_demo.mcp` with this repo as its working directory and `PAYPAL_ENV=sandbox`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, and optional `DEMO_DB=/private/path/credits.sqlite` provided via your client's private environment management. Restart the MCP server once after running `init-key` if it was already open. Example client configuration shape (no secrets here):
+Configure the client to launch `python3 -m tanod_paypal_demo.mcp` with this repo as its working directory. Provide the **same `DEMO_DB` used by `init-key`**, plus `PAYPAL_ENV=sandbox` and the sandbox app credentials, through its private environment management. Start the server after key creation, then keep it running through capture. Client configuration formats vary; this is the required launch shape (no secrets here):
 
 ```json
 {"mcpServers":{"paypal-credits-demo":{"command":"python3","args":["-m","tanod_paypal_demo.mcp"],"cwd":"/path/to/tanod-paypal-credits"}}}
